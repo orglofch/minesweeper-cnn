@@ -4,9 +4,8 @@ import numpy as np
 import tensorflow as tf
 import tf_utils
 
-from absl import app
-from absl import flags
-from tensorflow.keras import datasets, layers, losses, models
+from absl import app, flags
+from tensorflow.keras import layers, losses, models
 
 FLAGS = flags.FLAGS
 
@@ -31,7 +30,6 @@ def create_random_field(width: int,
 
     # Sweep the first empty cell we find.
     # TODO: Selecting the first one will bias the results.
-    # TODO: Pass number of mines as a feature
     for i, row in enumerate(field.proximity):
         for j, value in enumerate(row):
             if value == 0:

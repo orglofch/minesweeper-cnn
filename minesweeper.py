@@ -101,3 +101,20 @@ class Field:
             self.mask[y][x] = 2
         elif mask == 2:
             self.mask[y][x] = 0
+
+    def __str__(self):
+        out_str = ''
+        for i, row in enumerate(self.proximity):
+            for j, value in enumerate(row):
+                mask = self.mask[i][j]
+                symbol: str = None
+                if mask == 0:
+                    out_str += '_ '
+                elif mask == 2:
+                    out_str += 'F '
+                elif value == -1:
+                    out_str += '* '
+                else:
+                    out_str += str(value) + ' '
+            out_str += '\n'
+        return out_str
