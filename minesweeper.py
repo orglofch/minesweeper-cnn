@@ -1,6 +1,7 @@
-from enum import Enum
-import numpy
+import numpy as np
 import random
+
+from enum import Enum
 
 class FieldState(Enum):
     UNSOLVED = 1
@@ -22,8 +23,8 @@ class Field:
     def __init__(self, width: int, height: int, num_mines: int):
         self.width = width
         self.height = height
-        self.mask = numpy.zeros((height, width), numpy.int8)
-        self.proximity = numpy.zeros((height, width), numpy.int8)
+        self.mask = np.zeros((height, width), np.int8)
+        self.proximity = np.zeros((height, width), np.int8)
         self.state = FieldState.UNSOLVED
 
         # Generate mines.
@@ -66,7 +67,7 @@ class Field:
         elif mask == 0:
             # Expand the mask via flood-fill.
             queue = [(x, y)]
-            visited = numpy.zeros((self.height, self.width), numpy.bool_)
+            visited = np.zeros((self.height, self.width), np.bool_)
             while queue:
                 (fx, fy) = queue.pop()
                 visited[fy][fx] = True
