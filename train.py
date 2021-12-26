@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import minesweeper
 import numpy as np
+import random
 import tensorflow as tf
 import tf_utils
 
@@ -9,13 +10,13 @@ from tensorflow.keras import layers, losses, models
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('width', 16,
+flags.DEFINE_integer('width', 32,
                      'The width of the Minesweeper field.',
                      lower_bound=0)
-flags.DEFINE_integer('height', 8,
+flags.DEFINE_integer('height', 16,
                      'The height of the Minesweeper field.',
                      lower_bound=0)
-flags.DEFINE_integer('num_mines', 30,
+flags.DEFINE_integer('num_mines', 99,
                      'The number of mines in the field.',
                      lower_bound=0)
 
@@ -25,15 +26,16 @@ flags.DEFINE_string('output_directory', None,
 def create_random_field(width: int,
                         height: int,
                         num_mines: int) -> minesweeper.Field:
-    """Create a random field with an area revealed."""
+    """Create a random field with some areas revealed."""
     field = minesweeper.Field(width, height, num_mines)
 
-    # Sweep the first empty cell we find.
-    # TODO: Selecting the first one will bias the results.
-    for i, row in enumerate(field.proximity):
-        for j, value in enumerate(row):
-            if value == 0:
-                field.Sweep(j, i)
+    # Sweep a random number of safe cells.
+    num_sweeps = random.randrange(5, 25)
+    for _ in range(num_sweeps):
+        (x, y) = field.RandomSafeCell()
+        field.Sweep(x, y)
+        if field.IsCompleted():
+            break
     return field
 
 def create_probability_tensor(field: minesweeper.Field) -> tf.Tensor:
@@ -72,25 +74,29 @@ def main(argv):
     num_mines = FLAGS.num_mines
     output_directory = FLAGS.output_directory
 
-    (train_inputs, train_outputs) = create_examples(width, height, num_mines, 1000)
-    (test_inputs, test_outputs) = create_examples(width, height, num_mines, 100)
+    (train_inputs, train_outputs) = create_examples(width, height, num_mines, 5096)
+    (test_inputs, test_outputs) = create_examples(width, height, num_mines, 256)
 
-    model = models.Sequential()
-    model.add(layers.Conv2D(32, (3, 3),
-                            activation='relu',
-                            input_shape=(height, width, 1),
-                            padding='same'))
-    # TODO: Add more complexity.
-    model.add(layers.Conv2DTranspose(32, (3, 3), strides=(1, 1), padding='same'))
-    model.add(layers.Conv2D(1, 1, padding='same'))
+    input = layers.Input(shape=(height, width, 11))
+    model = layers.Conv2D(64, (5, 5),
+                          activation='relu',
+                          padding='same')(input)
+    model = layers.Conv2D(64, (5, 5),
+                          activation='relu',
+                          padding='same')(model)
+    model = layers.BatchNormalization()(model)
+    model = layers.Dropout(0.5)(model)
+    output = layers.Conv2D(1, 1, padding='same')(model)
+
+    model = models.Model(inputs=input, outputs=output)
 
     model.summary()
 
     model.compile(optimizer='adam',
-                  loss=losses.MeanAbsoluteError(),
+                  loss=losses.MeanSquaredError(),
                   metrics=['accuracy'])
 
-    history = model.fit(train_inputs, train_outputs, epochs=10,
+    history = model.fit(train_inputs, train_outputs, epochs=50,
                         validation_data=(test_inputs, test_outputs))
 
     plt.plot(history.history['accuracy'], label='accuracy')

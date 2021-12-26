@@ -4,13 +4,13 @@ from absl import app, flags
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('width', 16,
+flags.DEFINE_integer('width', 32,
                      'The width of the Minesweeper field.',
                      lower_bound=0)
-flags.DEFINE_integer('height', 8,
+flags.DEFINE_integer('height', 16,
                      'The height of the Minesweeper field.',
                      lower_bound=0)
-flags.DEFINE_integer('num_mines', 30,
+flags.DEFINE_integer('num_mines', 99,
                      'The number of mines in the field.',
                      lower_bound=0)
 
@@ -24,7 +24,7 @@ def print_usage():
     """);
 
 def run_sweep(input_pieces: list[str],
-              field: minesweeper.Field) -> minesweeper.FieldState:
+              field: minesweeper.Field):
     """Runs the 'sweep' command.
 
     Raises:
@@ -32,7 +32,7 @@ def run_sweep(input_pieces: list[str],
     """
     x = int(input_pieces[1])
     y = int(input_pieces[2])
-    return field.Sweep(x, y)
+    field.Sweep(x, y)
 
 def run_flag(input_pieces: list[str],
              field: minesweeper.Field):
@@ -51,10 +51,9 @@ def main(argv):
     num_mines = FLAGS.num_mines
 
     field = minesweeper.Field(width, height, num_mines)
-    print(field)
+    field.pretty_print()
 
-    field_state = minesweeper.FieldState.UNSOLVED
-    while field_state == minesweeper.FieldState.UNSOLVED:
+    while not field.IsCompleted():
         input_pieces = input("Enter command: ").split(' ')
         if not input_pieces:
             print('Invalid command')
@@ -62,7 +61,7 @@ def main(argv):
 
         try:
             if input_pieces[0] == 'sweep':
-                field_state = run_sweep(input_pieces, field)
+                run_sweep(input_pieces, field)
             elif input_pieces[0] == 'flag':
                 run_flag(input_pieces, field)
             elif input_pieces[0] == 'exit':
@@ -70,14 +69,14 @@ def main(argv):
             else:
                 print_usage()
                 continue
-        except ValueError as e:
-            print(e)
+        except ValueError:
             print_usage()
             continue
 
-        print(field)
+        field.pretty_print()
         print('')
-    print(field_state)
+    termination_state_color = 'red' if field.state == minesweeper.FieldState.FAILED else 'green'
+    print(termcolor.colored(field.state, termination_state_color))
 
 if __name__ == "__main__":
     app.run(main)

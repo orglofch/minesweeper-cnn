@@ -1,9 +1,11 @@
 import numpy as np
 import random
+import termcolor
 
 from enum import Enum
 
 class FieldState(Enum):
+    """The state of the Minesweeper field."""
     UNSOLVED = 1
     SOLVED = 2
     FAILED = 3
@@ -32,8 +34,8 @@ class Field:
             x = None
             y = None
             while True:
-                x = random.randrange(0, width - 1)
-                y = random.randrange(0, height - 1)
+                x = random.randrange(0, width)
+                y = random.randrange(0, height)
                 if (self.proximity[y][x] != -1):
                     break;
             self.proximity[y][x] = -1
@@ -44,12 +46,27 @@ class Field:
                     if 0 <= nx < width and 0 <= ny < height and self.proximity[ny][nx] != -1:
                         self.proximity[ny][nx] += 1
 
-    def Sweep(self, x: int, y: int) -> FieldState:
-        """Sweep a cell in the field for mines.
+    def IsCompleted(self) -> bool:
+        """Returns whether the field is in a terminal state."""
+        return self.state == FieldState.SOLVED or self.state == FieldState.FAILED
 
-        Returns:
-          The state of the field after the sweep.
+    def RandomSafeCell(self) -> (int, int):
+        """Returns a random covered safe cell.
+
+        Raises:
+          ValueError: If the field is in a completed state.
         """
+        if self.IsCompleted():
+            raise ConnectionError("There are no remaining covered safe cells")
+        candidate_cells = []
+        for i, row in enumerate(self.proximity):
+            for j, value in enumerate(row):
+                if value != -1 and self.mask[i][j] == 0:
+                    candidate_cells.append((j, i))
+        return candidate_cells[random.randrange(0, len(candidate_cells))]
+
+    def Sweep(self, x: int, y: int):
+        """Sweep a cell in the field for mines."""
         mask = self.mask[y][x]
         proximity = self.proximity[y][x]
 
@@ -91,7 +108,6 @@ class Field:
                     break
             if solved:
                 self.state = FieldState.SOLVED
-        return self.state
 
     def Flag(self, x: int, y: int):
         """Flags a cell as a mine."""
@@ -102,19 +118,30 @@ class Field:
         elif mask == 2:
             self.mask[y][x] = 0
 
-    def __str__(self):
+    def pretty_print(self):
+        """Print the field with colors."""
+        proximity_colors = [
+            'cyan',    # 1
+            'green',   # 2
+            'blue',    # 3
+            'magenta', # 4
+            'yellow',  # 5
+            'white',   # 6
+            'white',   # 7
+            'white',   # 8
+        ]
         out_str = ''
         for i, row in enumerate(self.proximity):
             for j, value in enumerate(row):
                 mask = self.mask[i][j]
-                symbol: str = None
                 if mask == 0:
-                    out_str += '_ '
+                    print(termcolor.colored('X', 'grey'), end=' ')
                 elif mask == 2:
-                    out_str += 'F '
+                    print(termcolor.colored('F', 'red'), end=' ')
                 elif value == -1:
-                    out_str += '* '
+                    print(termcolor.colored('*', 'red'), end=' ')
+                elif value == 0:
+                    print(' ', end=' ')
                 else:
-                    out_str += str(value) + ' '
-            out_str += '\n'
-        return out_str
+                    print(termcolor.colored(value, proximity_colors[value - 1]), end=' ')
+            print('')
