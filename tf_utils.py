@@ -6,8 +6,7 @@ def create_input_tensor(field: minesweeper.Field) -> tf.Tensor:
     """Returns a tensor representing the visible `field` state.
 
     The tensor is equivalent to `field.proximity` except mines are
-    replaced with the value 10, and masked cells are replaced by 0 in
-    order to match keras.Conv2D padding.
+    replaced with the value 9, and masked cells are replaced by 10.
 
     The tensor is encoded as a one-hot tensor to prevent the network
     from inferring information from the numeric values. If the network
@@ -19,11 +18,9 @@ def create_input_tensor(field: minesweeper.Field) -> tf.Tensor:
     for i, row in enumerate(tensor):
         for j, value in enumerate(row):
             if field.mask[i][j] == 0:
-                tensor[i][j] = 0
-            elif value == -1:
                 tensor[i][j] = 10
-            else:
-                tensor[i][j] += 1
+            elif value == -1:
+                tensor[i][j] = 9
 
     tensor = tensor.reshape(field.height, field.width, 1)
     return tf.one_hot(tf.convert_to_tensor(tensor, dtype=tf.uint8), 11, axis=2)

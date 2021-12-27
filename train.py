@@ -75,7 +75,7 @@ def main(argv):
     output_directory = FLAGS.output_directory
 
     (train_inputs, train_outputs) = create_examples(width, height, num_mines, 5096)
-    (test_inputs, test_outputs) = create_examples(width, height, num_mines, 256)
+    (test_inputs, test_outputs) = create_examples(width, height, num_mines, 512)
 
     input = layers.Input(shape=(height, width, 11))
     model = layers.Conv2D(64, (5, 5),
@@ -96,7 +96,7 @@ def main(argv):
                   loss=losses.MeanSquaredError(),
                   metrics=['accuracy'])
 
-    history = model.fit(train_inputs, train_outputs, epochs=50,
+    history = model.fit(train_inputs, train_outputs, epochs=100,
                         validation_data=(test_inputs, test_outputs))
 
     plt.plot(history.history['accuracy'], label='accuracy')
