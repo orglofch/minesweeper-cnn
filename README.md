@@ -4,6 +4,8 @@ Created a simple CNN to learn Tensorflow (and a bit of Python on the side).
 
 The CNN takes a partial Minesweeper field as input and predicts the locations of the mines. The CNN based solver then takes this prediction and sweeps the cell with the lowest probability. All input and output is through the consolve (i.e. there's no GUI).
 
+![example_field](https://github.com/orglofch/minesweeper-cnn/blob/main/example_field.png)
+
 # Performance:
 
 - Expert (32 x 16, 99 mines) - solves ~70%
@@ -40,5 +42,3 @@ Supports janky interactive Minesweeper through the command-line.
 ```
 python3 cli.py
 ```
-
-![example_field](https://github.com/orglofch/minesweeper-cnn/blob/main/example_field.png)
