@@ -14,7 +14,7 @@ The CNN takes a partial Minesweeper field as input and predicts the locations of
 Trains a new model.
 
 ```
-$ python3 train.py --output_directory=/tmp/model
+python3 train.py --output_directory=/tmp/model
 ```
 
 # Evaluation
@@ -22,13 +22,13 @@ $ python3 train.py --output_directory=/tmp/model
 Evaluates a model, running it through complete Minesweeper problems, counting how many the model finishes without hitting mines.
 
 ```
-$ python3 inference.py --policy=nn --model_directory=/tmp/model
+python3 inference.py --policy=nn --model_directory=/tmp/model
 ```
 
 For comparison, if you want to compare against the performance of just selecting random cells, you can run:
 
 ```
-$ python3 inference.py --policy=random
+python3 inference.py --policy=random
 ```
 
 The performance will not be good.
@@ -38,7 +38,7 @@ The performance will not be good.
 Supports janky interactive Minesweeper through the command-line.
 
 ```
-$ python3 cli.py
+python3 cli.py
 ```
 
-![example_field](https://github.com/orglofch/minesweeper-cnn/example_field.png)
+![example_field](https://github.com/orglofch/minesweeper-cnn/blob/main/example_field.png)
